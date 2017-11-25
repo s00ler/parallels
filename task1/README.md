@@ -6,9 +6,9 @@
 В результате будет создан исполняемый файл ./generator, который может быть использован для генерации графа со следующими параметрами:
 
 Пример 1:
-'''bash
+```
 ./generator -s 20 -e 32 -directed -weighted -t 14 -file graph.bin -type RMAT
-'''
+```
 Данный генератор использует следующие флаги:
 
 -s N - определяет масштаб графа, задает общее число вершин в генерируемом графе, равное 2^N. По умолчанию N установлено равным 15, в результате чего генерируется граф с 32 тыс. вершин.
@@ -27,35 +27,32 @@
 Пример считывания взвешенного графа из файла приведен ниже.
 
 Пример 2. Считывание и вывод на стандартный поток взвешенного графа из сгенерированного файла
-'''C++
-1 // open file
-2 fstream file(file_name, ios::in | ios::binary);
+```C++
+// open file
+fstream file(file_name, ios::in | ios::binary);
 3
-4 int vertices_count = 0;
-5 long long edges_count = 0;
-6
-7 // read header
-8 file.read((char*)(&vertices_count), sizeof(int));
-9 file.read((char*)(&edges_count), sizeof(long long));
-10
-11 // print graph
-12 cout << "Graph has " << vertices_count << " vertices" << endl;
-13 cout << "Graph has " << edges_count << " edges" << endl;
-14
-15 // get & print graph data for WEIGHTED graph
-16 for(long long i = 0; i < edges_count; i++)
-17 {
-18 int src_id = 0, dst_id = 0;
-19 float weight = 0;
-20
-21 // read i-th edge data
-22 file.read((char*)(&src_id), sizeof(int));
-23 file.read((char*)(&dst_id), sizeof(int));
-24 file.read((char*)(&weight), sizeof(float)); // remove it for unweighed graph
-25
-26 //print edge data
-27 cout << src_id << " " << dst_id << " | " << weight << endl;
-28 }
-29
-30 file.close();
-'''
+int vertices_count = 0;
+long long edges_count = 0;
+
+// read header
+file.read((char*)(&vertices_count), sizeof(int));
+file.read((char*)(&edges_count), sizeof(long long));
+
+// print graph
+cout << "Graph has " << vertices_count << " vertices" << endl;
+cout << "Graph has " << edges_count << " edges" << endl;
+
+// get & print graph data for WEIGHTED graph
+for(long long i = 0; i < edges_count; i++)
+{
+    int src_id = 0, dst_id = 0;
+    float weight = 0;
+    // read i-th edge data
+    file.read((char*)(&src_id), sizeof(int));
+    file.read((char*)(&dst_id), sizeof(int));
+    file.read((char*)(&weight), sizeof(float)); // remove it for unweighed graph
+    //print edge data
+    cout << src_id << " " << dst_id << " | " << weight << endl;
+}
+file.close();
+```
