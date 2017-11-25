@@ -1,8 +1,14 @@
 ## parallels
 
 ### Task 1
-Компиляция файла generator.cpp выполняется при помощи команды: g++ generator.cpp -O3 -o generator -fopenmp
-
+Компиляция файла generator.cpp выполняется при помощи команды:
+```
+g++ generator.cpp -O3 -o generator -fopenmp
+```
+На MacBook использовалась команда:
+```
+g++-7 generator.cpp -O3 -o generator -fopenmp
+```
 В результате будет создан исполняемый файл ./generator, который может быть использован для генерации графа со следующими параметрами:
 
 Пример 1:
