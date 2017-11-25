@@ -30,7 +30,7 @@
 ```C++
 // open file
 fstream file(file_name, ios::in | ios::binary);
-3
+
 int vertices_count = 0;
 long long edges_count = 0;
 
