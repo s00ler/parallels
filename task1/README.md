@@ -9,6 +9,7 @@ g++ generator.cpp -O3 -o generator -fopenmp
 ```
 g++-7 generator.cpp -O3 -o generator -fopenmp
 ```
+
 В результате будет создан исполняемый файл ./generator, который может быть использован для генерации графа со следующими параметрами:
 
 Пример 1:
@@ -62,3 +63,8 @@ for(long long i = 0; i < edges_count; i++)
 }
 file.close();
 ```
+### Using Graph500
+
+use ```export SKIP_BFS=1``` to run only SSSP with Graph500
+use ```export TMPFILE=file_name``` to set up file name
+use ```export REUSEFILE=1``` to enable file reuse
