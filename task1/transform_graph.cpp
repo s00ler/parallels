@@ -40,5 +40,6 @@ int main(int argc, char const *argv[]) {
         source.close();
         edges.close();
         weights.close();
+        cout << "Done!" << '\n';
         return 0;
 }
