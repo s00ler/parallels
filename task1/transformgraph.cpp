@@ -15,7 +15,7 @@ int main(int argc, char const *argv[]) {
         int vertices_count = 0;
         long long edges_count = 0;
         string new_name = argv[2];
-        new_name = new_name + ".weighеs";
+        new_name = new_name + ".weights";
         fstream source(argv[1], ios::in | ios::binary);
         fstream edges(argv[2], ios::out | ios::binary);
         fstream weights(new_name, ios::out | ios::binary);
