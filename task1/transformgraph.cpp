@@ -25,8 +25,7 @@ int main(int argc, char const *argv[]) {
         new_name = new_name + ".weights";
         fstream source(argv[1], ios::in | ios::binary);
         fstream edges(argv[2], ios::out | ios::binary);
-        if (weighted == 1) {
-                fstream weights(new_name, ios::out | ios::binary);}
+        if (weighted == 1) {fstream weights(new_name, ios::out | ios::binary);}
 
         source.read((char*)(&vertices_count), sizeof(int));
         source.read((char*)(&edges_count), sizeof(long long));
@@ -38,15 +37,12 @@ int main(int argc, char const *argv[]) {
                 // read i-th edge data
                 source.read((char*)(&src_id), sizeof(int));
                 source.read((char*)(&dst_id), sizeof(int));
-                if (weighted == 1) {
-                        source.read((char*)(&weight), sizeof(float));}
+                if (weighted == 1) {source.read((char*)(&weight), sizeof(float));}
                 // write i-th edge data
                 edges.write((char*)(&src_id), sizeof(int));
                 edges.write((char*)(&dst_id), sizeof(int));
                 edges.write((char*)(&ph), sizeof(int));
-                if (weighted == 1) {
-                        weights.write((char*)(&weight), sizeof(float));
-                }
+                if (weighted == 1) {weights.write((char*)(&weight), sizeof(float));}
         }
         source.close();
         edges.close();
