@@ -1,12 +1,12 @@
 #include <iostream>
-#include </usr/local/opt/open-mpi/include/mpi.h>
+#include <mpi.h>
 #include <omp.h>
 
 
 int main(int argc, char *argv[]) {
         int numprocs, rank, namelen;
         char processor_name[MPI_MAX_PROCESSOR_NAME];
-        int iam = 0, np = 4Init;
+        int iam = 0, np = 1;
         MPI_Init(&argc, &argv);
         MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
