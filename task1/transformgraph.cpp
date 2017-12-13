@@ -14,7 +14,8 @@ int main(int argc, char const *argv[]) {
         }
 
         if (argc == 4) {
-                int weighted = atoi(argv[3]);}
+                int weighted = atoi(argv[3]);
+        }
         else {
                 int weighted = 1
         }
