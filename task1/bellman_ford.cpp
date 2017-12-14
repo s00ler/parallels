@@ -2,10 +2,10 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
-#include <iomanip>
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/bellman_ford_shortest_paths.hpp>
 #include <ctime>
+
 using namespace boost;
 
 struct EdgeProperties {
