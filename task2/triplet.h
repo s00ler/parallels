@@ -1,7 +1,3 @@
-//
-// Created by Dmitry on 15.12.2017.
-//
-
 #ifndef TASK2_TRIPLET_H
 #define TASK2_TRIPLET_H
 namespace triplet {
