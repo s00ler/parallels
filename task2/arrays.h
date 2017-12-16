@@ -54,7 +54,7 @@ Array3D& Array3D::operator= (Array3D other) {
 }
 
 void Array3D::print() {
-    std::cout << "Array shape: " << shape << std::endl;
+        std::cout << "Array shape: " << shape << std::endl;
         for (int i = 0; i < shape.x; i++ ) {
                 for (int j = 0; j < shape.y; j++ ) {
                         for (int k = 0; k < shape.z; k++ ) {

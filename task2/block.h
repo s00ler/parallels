@@ -16,74 +16,74 @@
 #define TimeSteps 200
 
 class Block {
-    typedef struct {Array3D *prev; Array3D *curr; Array3D *next;} Values;
+typedef struct {Array3D *prev; Array3D *curr; Array3D *next;} Values;
 
-    typedef struct {Array3D *x_prev; Array3D *y_prev; Array3D *z_prev;
-                    Array3D *x_next; Array3D *y_next; Array3D *z_next;} Bounds;
+typedef struct {Array3D *x_prev; Array3D *y_prev; Array3D *z_prev;
+                Array3D *x_next; Array3D *y_next; Array3D *z_next;} Bounds;
 
-    typedef struct {int x_prev; int y_prev; int z_prev;
-                    int x_next; int y_next; int z_next;} Neighbours;
+typedef struct {int x_prev; int y_prev; int z_prev;
+                int x_next; int y_next; int z_next;} Neighbours;
 
-    triplet<int> shape {};
-    triplet<int> position {};
-    triplet<int> partition {};
-    triplet<double> L {};
-    triplet<double> d {};
+triplet<int> shape {};
+triplet<int> position {};
+triplet<int> partition {};
+triplet<double> L {};
+triplet<double> d {};
 
-    int rank {};
+int rank {};
 
-    double tau {};
+double tau {};
 
-    Values values {};
+Values values {};
 
-    Bounds bound {};
-    Bounds bound_buf {};
+Bounds bound {};
+Bounds bound_buf {};
 
-    Neighbours neighbour {};
+Neighbours neighbour {};
 
-    void print_block_param(triplet<int> data, const char *description = "Undescribed");
+void print_block_param(triplet<int> data, const char *description = "Undescribed");
 
-    triplet<int> count_block_partition(int proc_num);
+triplet<int> count_block_partition(int proc_num);
 
-    triplet<int> count_block_shape(triplet<int> block_partition, int grid_size);
+triplet<int> count_block_shape(triplet<int> block_partition, int grid_size);
 
-    triplet<int> count_block_position(triplet<int> block_partition, int rank);
+triplet<int> count_block_position(triplet<int> block_partition, int rank);
 
-    void init_bounds();
+void init_bounds();
 
-    void init_bounds_buf();
+void init_bounds_buf();
 
-    int get_process_id(triplet<int> position);
+int get_process_id(triplet<int> position);
 
-    int get_process_id(int x, int y, int z);
+int get_process_id(int x, int y, int z);
 
-    void set_neighbours_process_id();
+void set_neighbours_process_id();
 
-    void init_values();
+void init_values();
 
-    double phi (double x, double y, double z);
+double phi (double x, double y, double z);
 
-    void first_step();
+void first_step();
 
-    triplet<double> count_laplassian(int i, int j, int k);
+triplet<double> count_laplassian(int i, int j, int k);
 
-    void second_step();
+void second_step();
 
-    void next_step();
+void next_step();
 
-    void set_periodic_boundaries();
+void set_periodic_boundaries();
 
-    void transfer_data_between_processes();
+void transfer_data_between_processes();
 
-    void apply_periodic_boundaries();
+void apply_periodic_boundaries();
 
 public:
 
-    Block (int proc_num, int rank, int grid_size);
+Block (int proc_num, int rank, int grid_size);
 
-    void info();
+void info();
 
-    void compute(int print_proc);
+void compute(int print_proc);
 
 };
 
@@ -206,13 +206,13 @@ void Block::init_values() {
 
 void Block::set_neighbours_process_id() {
 
-        neighbour.x_prev = get_process_id(position.x == 0 ? partition.x - 1: position.x - 1, position.y, position.z);
+        neighbour.x_prev = get_process_id(position.x == 0 ? partition.x - 1 : position.x - 1, position.y, position.z);
         neighbour.x_next = get_process_id(position.x == (partition.x - 1) ? 0 : position.x + 1, position.y, position.z);
 
-        neighbour.y_prev = get_process_id(position.x, position.y == 0 ? partition.y - 1: position.y - 1, position.z);
+        neighbour.y_prev = get_process_id(position.x, position.y == 0 ? partition.y - 1 : position.y - 1, position.z);
         neighbour.y_next = get_process_id(position.x, position.y == (partition.y - 1) ? 0 : position.y + 1, position.z);
 
-        neighbour.z_prev = get_process_id(position.x, position.y, position.z == 0 ? partition.z - 1: position.z - 1);
+        neighbour.z_prev = get_process_id(position.x, position.y, position.z == 0 ? partition.z - 1 : position.z - 1);
         neighbour.z_next = get_process_id(position.x, position.y, position.z == (partition.z - 1) ? 0 : position.z + 1);
 
 }
@@ -263,7 +263,7 @@ void Block::second_step() {
                                 triplet<double> laplassian = count_laplassian(i, j, k);
                                 *values.next->iloc(i, j, k) = *values.curr->iloc(i, j, k)
                                                               + (laplassian.x + laplassian.y + laplassian.z)
-                                                                * tau * tau / 2;
+                                                              * tau * tau / 2;
                         }
 
 }
@@ -294,20 +294,20 @@ void Block::compute(int print_proc = -1) {
         if (rank == 0) {
                 std::cout << "Total execution time: " << MPI_Wtime() - start_time << std::endl;
         }
-        
+
 }
 
 void Block::next_step() {
 #pragma omp parallel for if (OMP_enabled)
         for (int k = 1; k < shape.z + 1; ++k)
                 for (int j = 1; j < shape.y + 1; ++j)
-                       for (int i = 1; i < shape.x + 1; ++i) {
+                        for (int i = 1; i < shape.x + 1; ++i) {
                                 triplet<double> laplassian = count_laplassian(i, j, k);
                                 *values.next->iloc(i, j, k) = *values.curr->iloc(i, j, k) * 2
                                                               - *values.prev->iloc(i, j, k)
                                                               + (laplassian.x + laplassian.y + laplassian.z)
-                                                                * tau * tau / 2;
-                       }
+                                                              * tau * tau / 2;
+                        }
 }
 
 void Block::set_periodic_boundaries() {
@@ -323,14 +323,14 @@ void Block::set_periodic_boundaries() {
                 for (int i = 1; i < shape.x; ++i) {
                         *bound.y_prev->iloc(i - 1, k - 1) = *values.next->iloc(i, position.y == 0 ? 1 : 2, k);
                         *bound.y_next->iloc(i - 1, k - 1) = *values.next->iloc(1, position.y == partition.y - 1
-                                                                                  ? shape.y : shape.y -1, k);
+                                                                               ? shape.y : shape.y -1, k);
                 }
 #pragma omp parallel for if (OMP_enabled)
         for (int j = 1; j < shape.y; ++j)
                 for (int i = 1; i < shape.x; ++i) {
                         *bound.z_prev->iloc(i - 1, j - 1) = *values.next->iloc(i, j, position.z == 0 ? 1 : 2);
                         *bound.z_next->iloc(i - 1, j - 1) = *values.next->iloc(i, j, position.z == partition.z - 1
-                                                                                     ? shape.z : shape.z -1);
+                                                                               ? shape.z : shape.z -1);
                 }
 }
 
