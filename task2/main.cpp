@@ -1,5 +1,3 @@
-#include <mpi.h>
-#include <tuple>
 #include "block.h"
 
 // Hyperparameters

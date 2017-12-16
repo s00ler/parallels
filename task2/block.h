@@ -4,6 +4,8 @@
 #include "arrays.h"
 #include <cmath>
 #include <omp.h>
+#include <mpi.h>
+
 
 // OMP flag
 //#define OMP_enabled true
