@@ -1,16 +1,11 @@
-#include <cmath>
 #include <mpi.h>
-
+#include <tuple>
 #include "block.h"
-//#include <omp.h>
-
-// OMP flag
-#define OMP_enabled False
 
 // Hyperparameters
-#define Length 1.0, 1.0, 1.0
-#define Time 0.1
-#define TimeSteps 200
+#define Length 2.0, 1.0, 2.0
+#define Time 0.01
+#define TimeSteps 20
 
 
 int main(int argc, char** argv) {
@@ -32,19 +27,17 @@ int main(int argc, char** argv) {
         return 0; }
 
     // Count grid parameters
-    dbl_triplet d = dbl_triplet {Length} / grid_size - 1;
+    triplet<double> L {Length};
+    triplet<double> d = L / (grid_size - 1);
     double tau = Time / TimeSteps;
 
     // Create block object
-    Block block(size, rank, grid_size);
+    Block block(size, rank, grid_size, L, d, tau);
 
     if (rank == print_rank) {
         std::cout << "Process rank = " << rank << std::endl;
-        block.print();
+        block.info();
         printf("_____________________\n");
-
-        Array3D tst {int_triplet {3, 3, 3}};
-        tst.print();
     }
 
     MPI_Finalize();
