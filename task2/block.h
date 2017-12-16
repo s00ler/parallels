@@ -11,9 +11,10 @@
 #define OMP_enabled true
 
 // Hyperparameters
-#define Length 2.0, 1.0, 2.0
-#define Time 0.1
-#define TimeSteps 200
+#define Length 1.0, 1.0, 1.0
+#define Time 0.01
+#define TimeSteps 20
+#define WithError false
 
 class Block {
 typedef struct {Array3D *prev; Array3D *curr; Array3D *next;} Values;
@@ -31,6 +32,7 @@ triplet<double> L {};
 triplet<double> d {};
 
 int rank {};
+int size = 1;
 
 double tau {};
 
@@ -77,6 +79,10 @@ void transfer_data_between_processes();
 
 void apply_periodic_boundaries();
 
+double analitycal(double x, double y, double z, double t);
+
+double count_max_error(double t);
+
 public:
 
 Block (int proc_num, int rank, int grid_size);
@@ -100,6 +106,7 @@ Block::Block(int proc_num, int rank, int grid_size) {
         shape = count_block_shape(partition, grid_size);
         position =  count_block_position(partition, rank);
         this->rank = rank;
+        this->size = proc_num;
         this->L = triplet<double> {Length};
         this->d = L / (grid_size - 1);;
         tau = Time / TimeSteps;
@@ -271,6 +278,7 @@ void Block::second_step() {
 void Block::compute(int print_proc = -1) {
         double start_time = MPI_Wtime();
         double iteration_finish_time {}, iteration_start_time {};
+        double error = -1.0;
         for (int ts = 0; ts <= TimeSteps; ++ts) {
                 iteration_start_time = MPI_Wtime();
 
@@ -285,14 +293,29 @@ void Block::compute(int print_proc = -1) {
                 values.curr = values.next;
 
                 iteration_finish_time = MPI_Wtime();
+                if (WithError) {
+                        error = count_max_error(ts);
+                        double error_buf[size];
+
+                        MPI_Gather(&error, 1, MPI_DOUBLE, error_buf, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+                        MPI_Barrier(MPI_COMM_WORLD);
+
+                        for (int i = 0; i < size; ++i)
+                                if (error < error_buf[i]) error = error_buf[i];
+                }
                 if (rank == -print_proc) {
+
                         std::cout << "Time step " << ts << "/" << TimeSteps << " done.\n"
-                                  << "Execution time: " <<  iteration_finish_time - iteration_start_time
+                                  << "Execution time: " <<  iteration_finish_time - iteration_start_time << std::endl
+                                  << "Max error: " << error << std::endl
                                   << "\n-----------------------\n";
                 }
         }
         if (rank == 0) {
-                std::cout << "Total execution time: " << MPI_Wtime() - start_time << std::endl;
+                std::cout << "Total execution time: " << MPI_Wtime() - start_time << std::endl
+                          << "Error on last iteration: " << error << std::endl
+                          << "\n-----------------------\n";
+
         }
 
 }
@@ -394,6 +417,29 @@ void Block::apply_periodic_boundaries() {
                         *values.next->iloc(i, j, 0)           = *bound_buf.z_prev->iloc(i - 1, j - 1);
                         *values.next->iloc(i, j, shape.z + 1) = *bound_buf.z_next->iloc(i - 1, j - 1);
                 }
+}
+
+double Block::analitycal(double x, double y, double z, double t) {
+        return sin(2 * M_PI * x / L.x)
+               * sin(2 * M_PI * y / L.z)
+               * sin(2 * M_PI * z / L.z)
+               * cos(2 * M_PI * sqrt(1 / L.x*L.x + 1 / L.y*L.y + 1 / L.z*L.z) * t);
+}
+
+double Block::count_max_error(double t) {
+        double error = 0.0, tmp;
+#pragma omp parallel for if (OMP_enabled)
+        for (int k = 1; k < shape.z + 1; ++k)
+                for (int j = 1; j < shape.y + 1; ++j)
+                        for (int i = 1; i < shape.x + 1; ++i) {
+                                tmp = fabs(*values.next->iloc(i, j, k) - analitycal(
+                                                   (position.x * shape.x + i - 1) * d.x,
+                                                   (position.y * shape.y + j - 1) * d.y,
+                                                   (position.z * shape.z + k - 1) * d.z,
+                                                   t * tau));
+                                if (error < tmp) error = tmp;
+                        }
+        return error;
 }
 
 #endif //TASK2_BLOCK_H
