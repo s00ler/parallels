@@ -3,23 +3,25 @@
 
 #include "triplet.h"
 
-class Array3D {
+#define OMP_enabled true
 
-double *data {};
-triplet<int> shape {};
+struct Array3D {
 
-public:
-Array3D(triplet<int> shape);
+        double *data {};
 
-Array3D(int x, int y, int z);
+        triplet<int> shape {};
 
-double operator[] (triplet<int> idx);
+        Array3D(triplet<int> shape);
 
-double *iloc(int x, int y, int z);
+        Array3D(int x, int y, int z);
 
-void print();
+        double operator[] (triplet<int> idx);
 
-Array3D& operator= (Array3D other);
+        double *iloc(int x, int y, int z);
+
+        void print();
+
+        Array3D& operator= (Array3D other);
 };
 
 //**************************************************************************
@@ -45,12 +47,14 @@ double *Array3D::iloc(int x = 0, int y = 0, int z = 0) {
 }
 
 Array3D& Array3D::operator= (Array3D other) {
+#pragma omp parallel for if (OMP_enabled)
         for (size_t i = 0; i < other.shape.x * other.shape.y * other.shape.z; ++i)
                 this->data[i] = other.data[i];
         return *this;
 }
 
 void Array3D::print() {
+    std::cout << "Array shape: " << shape << std::endl;
         for (int i = 0; i < shape.x; i++ ) {
                 for (int j = 0; j < shape.y; j++ ) {
                         for (int k = 0; k < shape.z; k++ ) {

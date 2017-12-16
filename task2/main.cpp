@@ -1,14 +1,8 @@
 #include "block.h"
 
-// Hyperparameters
-#define Length 1.0, 1.0, 1.0
-#define Time 0.01
-#define TimeSteps 20
-
-
 int main(int argc, char** argv) {
 
-        int size = 0, rank = 0, print_rank = -1;
+        int size = 0, rank = 0, print_rank = -1000000000;
         // Init MPI
         MPI_Init(&argc, &argv);
         MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -26,19 +20,17 @@ int main(int argc, char** argv) {
                 return 0;
         }
 
-        // Count grid parameters
-        triplet<double> L {Length};
-        triplet<double> d = L / (grid_size - 1);
-        double tau = Time / TimeSteps;
-
         // Create block object
-        Block block(size, rank, grid_size, L, d, tau);
+        Block block(size, rank, grid_size);
 
-        if (rank == print_rank) {
+        if (rank == abs(print_rank)) {
                 std::cout << "Process rank = " << rank << std::endl;
                 block.info();
                 printf("_____________________\n");
         }
+
+        // Compute
+        block.compute(print_rank);
 
         MPI_Finalize();
         return 0;
