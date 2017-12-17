@@ -89,7 +89,7 @@ Block (int proc_num, int rank, int grid_size);
 
 void info();
 
-void compute(int print_proc);
+void compute(int print_error);
 
 };
 
@@ -275,9 +275,9 @@ void Block::second_step() {
 
 }
 
-void Block::compute(int print_proc = -1) {
+void Block::compute(int print_error = 0) {
         double start_time = MPI_Wtime();
-        double iteration_finish_time {}, iteration_start_time {};
+        double iteration_finish_time {}, iteration_start_time {}, total_time = 0;
         double error = -1.0;
         for (int ts = 0; ts <= TimeSteps; ++ts) {
                 iteration_start_time = MPI_Wtime();
@@ -293,7 +293,7 @@ void Block::compute(int print_proc = -1) {
                 values.curr = values.next;
 
                 iteration_finish_time = MPI_Wtime();
-                if (WithError) {
+                if (print_error == 1) {
                         error = count_max_error(ts);
                         double error_buf[size];
 
@@ -303,10 +303,11 @@ void Block::compute(int print_proc = -1) {
                         for (int i = 0; i < size; ++i)
                                 if (error < error_buf[i]) error = error_buf[i];
                 }
-                if (rank == -print_proc) {
+                total_time += (iteration_finish_time - iteration_start_time);
+                if (rank == 0 and print_error) {
 
                         std::cout << "Time step " << ts << "/" << TimeSteps << " done.\n"
-                                  << "Execution time: " <<  iteration_finish_time - iteration_start_time << std::endl
+                                  << "Execution time: " << total_time  << std::endl
                                   << "Max error: " << error << std::endl
                                   << "\n-----------------------\n";
                 }
