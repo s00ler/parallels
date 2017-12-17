@@ -1,7 +1,6 @@
 from __future__ import print_function
 import subprocess
 import time
-from functools import reduce
 
 processes = [1, 2, 4, 8, 16, 32, 64, 128]
 grid_sizes = [128, 256, 512]
@@ -14,8 +13,7 @@ subprocess.check_output(['bash', '-c', "module add slurm"]).decode()
 while tasks:
     bashCommand = "squeue -p test"
     output = subprocess.check_output(['bash', '-c', bashCommand]).decode()
-    output = output.split('\n')
-    output = list(map(lambda l: l.split(' '), output))
+    output = list(map(lambda l: l.split(' '), output.split('\n')))
     output = [line for line in output if 'dagerasi' in line]
     free_spaces = 3 - len(output) + 1
     for i in range(free_spaces):
@@ -25,6 +23,6 @@ while tasks:
         output = subprocess.check_output(['bash', '-c', launchcmd]).decode()
         print(output)
         time.sleep(5)
-    time.sleep(30)
+    time.sleep(10)
 
 print("All tasks launched!")
