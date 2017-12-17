@@ -285,6 +285,7 @@ void Block::compute(int print_error = 0) {
                 if (ts == 0) first_step();
                 if (ts == 1) second_step();
                 if (ts >= 2) next_step();
+
                 set_periodic_boundaries();
                 transfer_data_between_processes();
                 apply_periodic_boundaries();
@@ -293,18 +294,18 @@ void Block::compute(int print_error = 0) {
                 values.curr = values.next;
 
                 iteration_finish_time = MPI_Wtime();
-                if (print_error == 1) {
-                        error = count_max_error(ts);
-                        double error_buf[size];
-
-                        MPI_Gather(&error, 1, MPI_DOUBLE, error_buf, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-                        MPI_Barrier(MPI_COMM_WORLD);
-
-                        for (int i = 0; i < size; ++i)
-                                if (error < error_buf[i]) error = error_buf[i];
-                }
                 total_time += (iteration_finish_time - iteration_start_time);
-                if (rank == 0 and print_error) {
+
+                error = count_max_error(ts);
+                double error_buf[size];
+
+                MPI_Gather(&error, 1, MPI_DOUBLE, error_buf, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+                MPI_Barrier(MPI_COMM_WORLD);
+
+                for (int i = 0; i < size; ++i)
+                        if (error < error_buf[i]) error = error_buf[i];
+
+                if (rank == 0 and print_error == 1) {
 
                         std::cout << "Time step " << ts << "/" << TimeSteps << " done.\n"
                                   << "Execution time: " << total_time  << std::endl
@@ -314,6 +315,7 @@ void Block::compute(int print_error = 0) {
         }
         if (rank == 0) {
                 std::cout << "Total execution time: " << MPI_Wtime() - start_time << std::endl
+                          << "Total computation time: " << total_time << std::endl
                           << "Error on last iteration: " << error << std::endl
                           << "\n-----------------------\n";
 
