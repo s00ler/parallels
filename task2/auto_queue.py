@@ -12,7 +12,8 @@ for procs in processes:
 
 while tasks:
     bashCommand = "squeue -p test"
-    output = subprocess.Popen(bashCommand.split(' '), stdout=subprocess.PIPE).communicate()[0]
+    output = subprocess.Popen(bashCommand.split(' '),
+                              stdout=subprocess.PIPE).communicate()[0]
     output = list(map(lambda l: l.split(' '), output.split('\n')))
     output = [line for line in output if 'dagerasi' in line]
     free_spaces = 3 - len(output)
@@ -20,7 +21,8 @@ while tasks:
         task = tasks.pop()
         launchcmd = "sbatch -p test -n {0} impi ./mpitask2 {1} 0".format(task[0],
                                                                          task[1])
-        output = subprocess.Popen(launchcmd.split(' '), stdout=subprocess.PIPE).communicate()[0]
+        output = subprocess.Popen(launchcmd.split(' '),
+                                  stdout=subprocess.PIPE).communicate()[0]
         print(output)
         time.sleep(5)
     time.sleep(30)
