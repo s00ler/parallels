@@ -347,7 +347,7 @@ void Block::set_periodic_boundaries() {
         for (int k = 1; k < shape.z + 1; ++k)
                 for (int i = 1; i < shape.x + 1; ++i) {
                         *bound.y_prev->iloc(i - 1, 0, k - 1) = *values.next->iloc(i, position.y == 0 ? 1 : 2, k);
-                        *bound.y_next->iloc(i - 1, 0, k - 1) = *values.next->iloc(1, position.y == partition.y - 1
+                        *bound.y_next->iloc(i - 1, 0, k - 1) = *values.next->iloc(i, position.y == partition.y - 1
                                                                                   ? shape.y : shape.y -1, k);
                 }
 #pragma omp parallel for if (OMP_enabled)
