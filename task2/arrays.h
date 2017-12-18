@@ -21,6 +21,8 @@ struct Array3D {
 
         void print();
 
+        void print_lined();
+
         Array3D& operator= (Array3D other);
 };
 
@@ -54,16 +56,24 @@ Array3D& Array3D::operator= (Array3D other) {
 }
 
 void Array3D::print() {
-        std::cout << "Array shape: " << shape << std::endl;
-        for (int i = 0; i < shape.x; i++ ) {
-                for (int j = 0; j < shape.y; j++ ) {
-                        for (int k = 0; k < shape.z; k++ ) {
+    std::cout << "Array shape: " << shape << std::endl;
+        for (int k = 0; k < shape.z; k++ ) {
+                for (int i = 0; i < shape.x; i++ ) {
+                        for (int j = 0; j < shape.y; j++ ) {
                                 std::cout << *iloc(i, j, k) << " ";
                         }
                         std::cout << std::endl;
                 }
                 std::cout << "_____________________" << std::endl;
         }
+}
+
+void Array3D::print_lined() {
+    std::cout << "Array shape: " << shape << std::endl;
+    for (int i = 0; i < shape.x * shape.y * shape.z; ++i)
+        std::cout << data[i] << " ";
+    std::cout << std::endl;
+
 }
 
 #endif //TASK2_ARRAY3D_H
