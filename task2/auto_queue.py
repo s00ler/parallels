@@ -30,6 +30,6 @@ while tasks:
                                   stdout=subprocess.PIPE).communicate()[0]
         print(output)
         time.sleep(2)
-    time.sleep(60)
+    time.sleep(20)
 
 print("All tasks launched!")

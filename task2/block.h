@@ -62,8 +62,6 @@ class Block {
 
     void init_values();
 
-    double phi (double x, double y, double z);
-
     void first_step();
 
     triplet<double> count_laplassian(int i, int j, int k);
@@ -108,7 +106,7 @@ Block::Block(int proc_num, int rank, int grid_size) {
         this->size = proc_num;
         this->L = triplet<double> {Length};
         this->d = L / (grid_size - 1);
-        tau = Time / (TimeSteps - 1);
+        tau = Time / TimeSteps;
 
         init_values();
         init_bounds();
@@ -136,7 +134,7 @@ void Block::init_bounds_buf() {
 }
 
 triplet<int> Block::count_block_partition(int proc_num) {
-        triplet<int> block_partition {1,1,1};
+        triplet<int> block_partition {1, 1, 1};
         int axis = 0;
         while (proc_num != 1)
         {
@@ -186,7 +184,7 @@ void Block::info() {
         print_block_param(shape, "Shape");
         print_block_param(position, "Position");
         std::cout << "Proc_id: " << get_process_id(position) << std::endl;
-        std::cout << "Neighbour processes: \n -------------------\n"
+        std::cout << "Neighbour processes: \n ------------------- \n"
                   << "x prev = " << neighbour.x_prev
                   << ", " << " x next = " << neighbour.x_next << std::endl
                   << "y prev = " << neighbour.y_prev
@@ -223,21 +221,16 @@ void Block::set_neighbours_process_id() {
 
 }
 
-double Block::phi(double x, double y, double z) {
-        return sin(2* M_PI * x / L.x)
-               * sin(2 * M_PI * y / L.y)
-               * sin(2 * M_PI * z / L.z);
-}
 
 void Block::first_step() {
 #pragma omp parallel for if (OMP_enabled)
         for (int k = 1; k < shape.z + 1; ++k)
                 for (int j = 1; j < shape.y + 1; ++j)
                         for (int i = 1; i < shape.x + 1; ++i)
-                                *values.next->iloc(i, j, k) = phi((position.x * shape.x + i - 1) * d.x,
-                                                                  (position.y * shape.y + j - 1) * d.y,
-                                                                  (position.z * shape.z + k - 1) * d.z);
-
+                                *values.next->iloc(i, j, k) = analitycal((position.x * shape.x + i - 1) * d.x,
+                                                                         (position.y * shape.y + j - 1) * d.y,
+                                                                         (position.z * shape.z + k - 1) * d.z,
+                                                                                                          0);
 }
 
 triplet<double> Block::count_laplassian(int i, int j, int k) {
@@ -319,7 +312,7 @@ void Block::compute(int print_proc = 0) {
                           << "\n-----------------------\n";
 
         }
-
+        
 }
 
 void Block::next_step() {
@@ -339,23 +332,23 @@ void Block::set_periodic_boundaries() {
 #pragma omp parallel for if (OMP_enabled)
         for (int k = 1; k < shape.z + 1; ++k)
                 for (int j = 1; j < shape.y + 1; ++j) {
-                        *bound.x_prev->iloc(0, j - 1, k - 1) = *values.next->iloc(position.x == 0 ? 1 : 2, j, k);
-                        *bound.x_next->iloc(0, j - 1, k - 1) = *values.next->iloc(position.x == partition.x - 1
-                                                                               ? shape.x : shape.x -1, j, k);
+                        *bound.x_prev->iloc(0, j - 1, k - 1) = *values.next->iloc(position.x != 0 ? 1 : 2, j, k);
+                        *bound.x_next->iloc(0, j - 1, k - 1) = *values.next->iloc(position.x != partition.x - 1
+                                                                                  ? shape.x : shape.x - 1, j, k);
                 }
 #pragma omp parallel for if (OMP_enabled)
         for (int k = 1; k < shape.z + 1; ++k)
                 for (int i = 1; i < shape.x + 1; ++i) {
-                        *bound.y_prev->iloc(i - 1, 0, k - 1) = *values.next->iloc(i, position.y == 0 ? 1 : 2, k);
-                        *bound.y_next->iloc(i - 1, 0, k - 1) = *values.next->iloc(i, position.y == partition.y - 1
-                                                                                  ? shape.y : shape.y -1, k);
+                        *bound.y_prev->iloc(i - 1, 0, k - 1) = *values.next->iloc(i, position.y != 0 ? 1 : 2, k);
+                        *bound.y_next->iloc(i - 1, 0, k - 1) = *values.next->iloc(i, position.y != partition.y - 1
+                                                                                     ? shape.y : shape.y - 1, k);
                 }
 #pragma omp parallel for if (OMP_enabled)
         for (int j = 1; j < shape.y + 1; ++j)
                 for (int i = 1; i < shape.x + 1; ++i) {
-                        *bound.z_prev->iloc(i - 1, j - 1, 0) = *values.next->iloc(i, j, position.z == 0 ? 1 : 2);
-                        *bound.z_next->iloc(i - 1, j - 1, 0) = *values.next->iloc(i, j, position.z == partition.z - 1
-                                                                                     ? shape.z : shape.z -1);
+                        *bound.z_prev->iloc(i - 1, j - 1, 0) = *values.next->iloc(i, j, position.z != 0 ? 1 : 2);
+                        *bound.z_next->iloc(i - 1, j - 1, 0) = *values.next->iloc(i, j, position.z != partition.z - 1
+                                                                                        ? shape.z : shape.z - 1);
                 }
 }
 
@@ -438,7 +431,7 @@ double Block::count_max_error(double t) {
                         (position.x * shape.x + i - 1) * d.x,
                         (position.y * shape.y + j - 1) * d.y,
                         (position.z * shape.z + k - 1) * d.z,
-                        t * tau));
+                        (t - 1) * tau));
                 if (error < tmp)
                         error = tmp;
             }

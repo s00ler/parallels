@@ -26,15 +26,22 @@ int main(int argc, char** argv) {
         // Create block object
         Block block(size, rank, grid_size);
 
-        if (rank == 0) {
-                block.info();
-                printf("_____________________\n");
-        }
+        for (int proc_rank = 0; proc_rank < size; proc_rank++)
+                if (rank == proc_rank and print_error == 1) {
+                        block.info();
+                        printf("_____________________\n");
+                }
 
         // Compute
         block.compute(print_error);
 
         MPI_Finalize();
-
+//        Array3D tmpx = {1,3,4};
+//        Array3D tmpy = {3,1,4};
+//        Array3D tmpz = {3,4,1};
+//
+//        tmpx.print();
+//        tmpy.print();
+//        tmpz.print();
         return 0;
 }
